@@ -12,7 +12,7 @@ namespace dict {
      * @brief Key structure representing the 32-bit key and the associated index into the values array
      */
     struct Key {
-        size_t m_index;
+        uint32_t m_index;
         uint32_t m_key;
 
         Key(): m_index(0), m_key(0) 
@@ -20,12 +20,17 @@ namespace dict {
     };
 
     /**
-     * @brief Comparator for the Key struct which only compares the 32-bit key
+     * @brief binary search using std::lower_bound to find a Key based on the key value
+     * 
+     * @tparam ForwardIt - iterator type
+     * @tparam T - key type
+     * @tparam Compare - comparison method type
+     * @param first - iterator pointed at first element
+     * @param last - iterator pointed beyond the last element
+     * @param value - key value to search for
+     * @param comp - comparison method
+     * @return ForwardIt - iterator pointing to the desired Key element or end() if not found
      */
-    struct KeyCompare {
-        bool operator()(const Key &a, const Key &b) const { return a.m_key < b.m_key; }
-    } keyCompare;
-
     template<class ForwardIt, class T, class Compare>
     ForwardIt findKey(ForwardIt first, ForwardIt last, const T& value, Compare comp)
     {
@@ -207,10 +212,12 @@ namespace dict {
             if (!contains(key))
             {
                 m_keys[m_size].m_key = key;
-                m_keys[m_size].m_index = m_size;
+                m_keys[m_size].m_index = static_cast<uint32_t>(m_size);
                 m_values[m_size] = value;
                 m_size++;
-                std::sort(&m_keys[0], &m_keys[m_size], keyCompare);
+                std::sort(&m_keys[0], &m_keys[m_size], 
+                    [](const Key &a, const Key &b) 
+                    { return a.m_key < b.m_key; });
                 return true;
             }
             return false;
@@ -226,9 +233,7 @@ namespace dict {
          */
         bool set(const uint32_t &key, const Value &value)
         {
-            auto i = findKey(&m_keys[0],&m_keys[m_size], key,
-                [] (Key &elt, const uint32_t &key)
-                { return elt.m_key < key; });
+            auto i = find(key);
 
             if (i != &m_keys[m_size]) {
                 m_values.at(i->m_index) = value;
@@ -245,11 +250,7 @@ namespace dict {
          * @return false - key/value pair is not present
          */
         bool contains(const uint32_t key) {
-            auto i = findKey(&m_keys[0],&m_keys[m_size], key,
-                [] (Key &elt, const uint32_t &key)
-                { return elt.m_key < key; });
-
-            return (i != &m_keys[m_size]);
+            return (find(key) != &m_keys[m_size]);
         }
 
         /**
@@ -260,9 +261,7 @@ namespace dict {
          *                  throws std::out_of_range exception if key is not present
          */
         Value &at(const uint32_t key) {
-            auto i = findKey(&m_keys[0],&m_keys[m_size], key,
-                [] (Key &elt, const uint32_t &key)
-                { return elt.m_key < key; });
+            auto i = find(key);
 
             if (i != &m_keys[m_size]) {
                 return m_values.at(i->m_index);
@@ -278,9 +277,7 @@ namespace dict {
          *                  throws std::out_of_range exception if key is not present
          */
         Value &at(const Key &key) {
-            auto i = findKey(&m_keys[0],&m_keys[m_size], key.m_key,
-                [] (Key &elt, const uint32_t &theKey)
-                { return elt.m_key < theKey; });
+            auto i = find(key.m_key);
 
             if (i != &m_keys[m_size]) {
                 return m_values.at(i->m_index);
@@ -296,9 +293,7 @@ namespace dict {
          *                        throws std::out_of_range exception if key is not present
          */
         const Value &at(const uint32_t key) const {
-            auto i = findKey(&m_keys[0],&m_keys[m_size], key,
-                [] (Key &elt, const uint32_t &key)
-                { return elt.m_key < key; });
+            auto i = find(key);
 
             if (i != &m_keys[m_size]) {
                 return m_values.at(i->m_index);
@@ -311,6 +306,17 @@ namespace dict {
          */
 
     private:
+        /**
+         * @brief Find a key in the ordered collection of keys
+         * 
+         * @param key - key value to search for
+         * @return Key* - Key element matching the key value
+         */
+        Key* find(const uint32_t key) {
+            return findKey(&m_keys[0],&m_keys[m_size], key,
+                [] (Key &elt, const uint32_t &key)
+                { return elt.m_key < key; });
+        }
         /**
          * @brief Class members are expected to be a contiguous block of memory based on 
          *        std::array ContiguousContainer requirements
