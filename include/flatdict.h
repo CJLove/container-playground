@@ -26,6 +26,16 @@ namespace dict {
         bool operator()(const Key &a, const Key &b) const { return a.m_key < b.m_key; }
     } keyCompare;
 
+    template<class ForwardIt, class T, class Compare>
+    ForwardIt findKey(ForwardIt first, ForwardIt last, const T& value, Compare comp)
+    {
+        ForwardIt i = std::lower_bound(first, last, value, comp);
+        if (i != last && !(value < i->m_key))
+            return i;
+        else
+            return last;
+    }
+
     /**
      * @brief The Dict class implements a "flat" key/value dictionary
      * 
@@ -216,9 +226,9 @@ namespace dict {
          */
         bool set(const uint32_t &key, const Value &value)
         {
-            auto i = std::find_if(&m_keys[0],&m_keys[m_size],
-                [key](Key &elt)
-                { return key == elt.m_key; });
+            auto i = findKey(&m_keys[0],&m_keys[m_size], key,
+                [] (Key &elt, const uint32_t &key)
+                { return elt.m_key < key; });
 
             if (i != &m_keys[m_size]) {
                 m_values.at(i->m_index) = value;
@@ -235,9 +245,9 @@ namespace dict {
          * @return false - key/value pair is not present
          */
         bool contains(const uint32_t key) {
-            auto i = std::find_if(&m_keys[0],&m_keys[m_size],
-                [key](Key &elt)
-                { return key == elt.m_key; });
+            auto i = findKey(&m_keys[0],&m_keys[m_size], key,
+                [] (Key &elt, const uint32_t &key)
+                { return elt.m_key < key; });
 
             return (i != &m_keys[m_size]);
         }
@@ -250,9 +260,10 @@ namespace dict {
          *                  throws std::out_of_range exception if key is not present
          */
         Value &at(const uint32_t key) {
-            auto i = std::find_if(&m_keys[0],&m_keys[m_size],
-                [key](Key &elt)
-                { return key == elt.m_key; });
+            auto i = findKey(&m_keys[0],&m_keys[m_size], key,
+                [] (Key &elt, const uint32_t &key)
+                { return elt.m_key < key; });
+
             if (i != &m_keys[m_size]) {
                 return m_values.at(i->m_index);
             }
@@ -267,9 +278,10 @@ namespace dict {
          *                  throws std::out_of_range exception if key is not present
          */
         Value &at(const Key &key) {
-            auto i = std::find_if(&m_keys[0],&m_keys[m_size],
-                [key](Key &elt)
-                { return key.m_key == elt.m_key; });
+            auto i = findKey(&m_keys[0],&m_keys[m_size], key.m_key,
+                [] (Key &elt, const uint32_t &theKey)
+                { return elt.m_key < theKey; });
+
             if (i != &m_keys[m_size]) {
                 return m_values.at(i->m_index);
             }
@@ -284,9 +296,10 @@ namespace dict {
          *                        throws std::out_of_range exception if key is not present
          */
         const Value &at(const uint32_t key) const {
-            auto i = std::find_if(&m_keys[0],&m_keys[m_size],
-                [key](Key &elt)
-                { return key == elt.m_key; });
+            auto i = findKey(&m_keys[0],&m_keys[m_size], key,
+                [] (Key &elt, const uint32_t &key)
+                { return elt.m_key < key; });
+
             if (i != &m_keys[m_size]) {
                 return m_values.at(i->m_index);
             }
