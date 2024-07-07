@@ -4,8 +4,26 @@
 
 using namespace dict;
 
+/**
+ * @brief Notional Value class for unit tests (all POD types)
+ */
+struct Value
+{
+    uint32_t m_value;
+    bool m_flag1;
+    bool m_flag2;
+
+    Value() : m_value(0), m_flag1(false), m_flag2(false)
+    {
+    }
+
+    Value(uint32_t value) : m_value(value), m_flag1(false), m_flag2(false)
+    {
+    }
+};
+
 TEST(container_test, basicTests) {
-    Dict<10> dict;
+    Dict<Value,10> dict;
     EXPECT_EQ(10,dict.capacity());
     EXPECT_EQ(0,dict.size());
     EXPECT_EQ(sizeof(dict), dict.container_size());
@@ -14,7 +32,7 @@ TEST(container_test, basicTests) {
 }
 
 TEST(container_test, insertion) {
-    Dict<5> dict;
+    Dict<Value,5> dict;
     // insert() with key present/not present
     EXPECT_TRUE(dict.insert(111,456));
     EXPECT_FALSE(dict.insert(111,666));
@@ -48,7 +66,7 @@ TEST(container_test, insertion) {
 }
 
 TEST(container_test, updates) {
-    Dict<5> dict;
+    Dict<Value,5> dict;
     // set() with key not present
     EXPECT_FALSE(dict.set(444,123));
 
@@ -65,7 +83,7 @@ TEST(container_test, updates) {
 }
 
 TEST(container_test, ranges) {
-    Dict<10> dict;
+    Dict<Value,10> dict;
 
     EXPECT_TRUE(dict.insert(111,111));
     EXPECT_TRUE(dict.insert(555,555));

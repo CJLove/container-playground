@@ -26,24 +26,12 @@ namespace dict {
         bool operator()(const Key &a, const Key &b) const { return a.m_key < b.m_key; }
     } keyCompare;
 
-    struct Value {
-        uint32_t m_value;
-        bool m_flag1;
-        bool m_flag2;
-
-        Value(): m_value(0), m_flag1(false), m_flag2(false)
-        {}
-
-        Value(uint32_t value): m_value(value), m_flag1(false), m_flag2(false)
-        {}
-    };
-
     /**
      * @brief The Dict class implements a "flat" key/value dictionary
      * 
      * @tparam N - maximum number of elements in the dictionary
      */
-    template<std::size_t N>
+    template<class Value, std::size_t N>
     class Dict {
     public:
         // Type aliases

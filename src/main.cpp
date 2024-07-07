@@ -4,9 +4,28 @@
 
 using namespace dict;
 
+/**
+ * @brief Notional Value for example code
+ *
+ */
+struct Value
+{
+    uint32_t m_value;
+    bool m_flag1;
+    bool m_flag2;
+
+    Value() : m_value(0), m_flag1(false), m_flag2(false)
+    {
+    }
+
+    Value(uint32_t value) : m_value(value), m_flag1(false), m_flag2(false)
+    {
+    }
+};
+
 int main(int , char**)
 {
-    Dict<10> dict;
+    Dict<Value,10> dict;
 
     std::cout << "Key size " << sizeof(Key) << " Value size " << sizeof(Value) << "\n";
     std::cout << "Dict<10> size " << sizeof(dict) << "\n";
@@ -59,7 +78,7 @@ int main(int , char**)
     auto *buffer = dict.data();
     size_t size = dict.container_size();
 
-    Dict<10> dict2(buffer,size);
+    Dict<Value,10> dict2(buffer,size);
     std::cout << "dict2.size() " << dict2.size() << " dict2.capacity() " << dict2.capacity() << "\n";
 
     for (const auto &elt: dict2) {
