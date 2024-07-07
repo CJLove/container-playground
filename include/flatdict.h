@@ -68,9 +68,9 @@ namespace dict {
             }
             // Set m_size from the buffer
             m_size = *(reinterpret_cast<const size_t*>(buf));
-            // Validate that the buffer's m_size value matches this
-            // class size
-            if (m_size != sizeof(*this)) {
+            // Validate that the buffer's m_size is within the Dict
+            // capacity
+            if (m_size > N) {
                 throw std::runtime_error("Invalid buffer content");
             }
             // Copy buffer's keys into m_keys
